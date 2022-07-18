@@ -4,8 +4,9 @@ import 'package:get/get.dart';
 import 'package:presence_app/app/routes/app_pages.dart';
 
 class LoginController extends GetxController {
-  TextEditingController emailCon = TextEditingController();
-  TextEditingController passwordCon = TextEditingController();
+  TextEditingController emailCon =
+      TextEditingController(text: "dev.with.ari@gmail.com");
+  TextEditingController passwordCon = TextEditingController(text: "password");
 
   final formKey = GlobalKey<FormState>();
 

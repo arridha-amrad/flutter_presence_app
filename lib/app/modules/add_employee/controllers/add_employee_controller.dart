@@ -19,6 +19,7 @@ class AddEmployeeController extends GetxController {
 
   @override
   void onInit() {
+    print("Hello World");
     emailCon.addListener(() => isEmailFilled.value = emailCon.text.isNotEmpty);
     nipCon.addListener(() => isNipFilled.value = nipCon.text.isNotEmpty);
     nameCon.addListener(() => isNameFilled.value = nameCon.text.isNotEmpty);
@@ -61,6 +62,12 @@ class AddEmployeeController extends GetxController {
     ));
   }
 
+  void _resetTextField() {
+    emailCon.clear();
+    nipCon.clear();
+    nameCon.clear();
+  }
+
   AlertDialog _setAlertdialog({
     required BuildContext context,
     required String title,
@@ -78,10 +85,17 @@ class AddEmployeeController extends GetxController {
             onPressed: () {
               // user.sendEmailVerification();
               Get.back();
+              _resetTextField();
               _setToast("Please check your email");
             },
             child: const Text("Resend")),
-        TextButton(onPressed: () => Get.back(), child: const Text("Ok")),
+        TextButton(
+            onPressed: () {
+              Get.back();
+              _resetTextField();
+              _setToast("Please check your email");
+            },
+            child: const Text("Ok")),
       ],
     );
   }
@@ -99,7 +113,8 @@ class AddEmployeeController extends GetxController {
         "nip": nipCon.text,
         "name": nameCon.text,
         "email": emailCon.text,
-        "createdAt": DateTime.now()
+        "createdAt": DateTime.now(),
+        "isFirstLogin": true,
       });
       await credential.user!.sendEmailVerification();
       showDialog(

@@ -13,10 +13,13 @@ class HomeView extends GetView<HomeController> {
         title: const Text('HomeView'),
         centerTitle: true,
       ),
-      body: Center(
-          child: ElevatedButton(
-              child: const Text("Logout"),
-              onPressed: () => controller.logout())),
+      body: ListView(
+        children: [
+          Obx(() => Text(controller.email.value)),
+          ElevatedButton(
+              child: const Text("Logout"), onPressed: () => controller.logout())
+        ],
+      ),
     );
   }
 }

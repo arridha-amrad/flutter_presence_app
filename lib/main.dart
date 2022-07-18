@@ -22,7 +22,7 @@ Future<void> main() async {
           primarySwatch: Colors.green,
           appBarTheme: const AppBarTheme(elevation: 0.0)),
       title: "Application",
-      initialRoute: Routes.ADD_EMPLOYEE,
+      initialRoute: Routes.HOME,
       getPages: AppPages.routes,
     ),
   );
