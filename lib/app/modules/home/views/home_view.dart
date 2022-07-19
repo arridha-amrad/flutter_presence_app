@@ -12,6 +12,9 @@ class HomeView extends GetView<HomeController> {
         appBar: AppBar(
           title: const Text('HomeView'),
           centerTitle: true,
+          actions: [
+            IconButton(onPressed: () {}, icon: const Icon(Icons.person_add))
+          ],
         ),
         floatingActionButton: FloatingActionButton(
           elevation: 0,

@@ -46,23 +46,23 @@ class LoginView extends GetView<LoginController> {
                     ),
                     const SizedBox(height: 12.0),
                     ElevatedButton(
-                        onPressed: controller.isEmailFilled.value &&
-                                controller.isPasswordFilled.value
-                            ? () {
-                                if (controller.formKey.currentState!
-                                    .validate()) {
-                                  controller.login();
-                                }
+                      onPressed: controller.isEmailFilled.value &&
+                              controller.isPasswordFilled.value
+                          ? () {
+                              if (controller.formKey.currentState!.validate()) {
+                                controller.login();
                               }
-                            : null,
-                        child: Text(
-                          "Login".toUpperCase(),
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        )),
+                            }
+                          : null,
+                      child: Text(
+                        "Login".toUpperCase(),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                          onPressed: () => {},
+                          onPressed: () => Get.toNamed(Routes.FORGOT_PASSWORD),
                           child: const Text("forgot password ?")),
                     ),
                     Row(
