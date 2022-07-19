@@ -1,9 +1,8 @@
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:presence_app/app/routes/app_pages.dart';
 
 class HomeController extends GetxController {
@@ -23,13 +22,20 @@ class HomeController extends GetxController {
   }
 
   Future<void> updatePassword() async {
-    if (_auth.currentUser != null) {
-      await _auth.currentUser!.updatePassword(passwordCon.text);
-      await employee
-          .doc(_auth.currentUser!.uid)
-          .update({"isFirstLogin": false});
-      _setToast("Password updated successfully");
-    }
+    final user = _auth.currentUser!;
+    await employee.doc(user.uid).update({"isFirstLogin": false});
+    await user.updatePassword(passwordCon.text);
+    await _auth.signOut();
+    await _auth.signInWithEmailAndPassword(
+      email: user.email!,
+      password: passwordCon.text,
+    );
+    _setToast("Password updated successfully");
+  }
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> getUser() async {
+    final uid = _auth.currentUser!.uid;
+    return employee.doc(uid).get();
   }
 
   @override
@@ -40,71 +46,6 @@ class HomeController extends GetxController {
           r"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$");
       isPasswordValid.value = regExp.hasMatch(passwordCon.text);
     });
-    if (_auth.currentUser != null) {
-      email.value = _auth.currentUser!.email!;
-    }
-    final isInit = Get.parameters["initLogin"];
-    print(isInit);
-    final snapshot = await employee.doc(_auth.currentUser!.uid).get();
-    final user = snapshot.data();
-    print("==================== user : $user");
-    if (user != null && user["isFirstLogin"]) {
-      Future.delayed(
-          const Duration(milliseconds: 500),
-          () => showDialog(
-              context: Get.context!,
-              builder: (context) => Obx(() => AlertDialog(
-                    title: const Text(
-                      "Welcome to the App",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    content: SizedBox(
-                      height: MediaQuery.of(context).size.height / 3,
-                      child: Column(
-                        children: [
-                          const Text(
-                            "We notice this is your first login. Please update your password",
-                            style: TextStyle(fontSize: 14),
-                          ),
-                          const SizedBox(height: 17.0),
-                          TextFormField(
-                            controller: passwordCon,
-                            obscureText: !isShowPassword.value,
-                            decoration: const InputDecoration(
-                                hintText: "Password",
-                                border: UnderlineInputBorder()),
-                          ),
-                          CheckboxListTile(
-                            contentPadding: EdgeInsets.zero,
-                            value: isShowPassword.value,
-                            dense: true,
-                            onChanged: (val) {
-                              if (val != null) {
-                                isShowPassword.value = val;
-                              }
-                            },
-                            title: const Text("Show Password"),
-                            controlAffinity: ListTileControlAffinity.leading,
-                          ),
-                          const SizedBox(height: 12.0),
-                        ],
-                      ),
-                    ),
-                    actions: [
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                            onPressed: isPasswordValid.value
-                                ? () {
-                                    updatePassword();
-                                    Get.back();
-                                  }
-                                : null,
-                            child: const Text("Update Password")),
-                      )
-                    ],
-                  ))));
-    }
     super.onInit();
   }
 

@@ -11,11 +11,14 @@ class AddEmployeeController extends GetxController {
   final CollectionReference _employees =
       FirebaseFirestore.instance.collection("employees");
 
+  final _auth = FirebaseAuth.instance;
+
   final formKey = GlobalKey<FormState>();
 
   RxBool isEmailFilled = false.obs;
   RxBool isNipFilled = false.obs;
   RxBool isNameFilled = false.obs;
+  RxBool isCreatingEmployee = false.obs;
 
   @override
   void onInit() {
@@ -72,7 +75,7 @@ class AddEmployeeController extends GetxController {
     required BuildContext context,
     required String title,
     required String message,
-    // required User user,
+    required User user,
   }) {
     return AlertDialog(
       title: Text(
@@ -83,17 +86,17 @@ class AddEmployeeController extends GetxController {
       actions: [
         TextButton(
             onPressed: () {
-              // user.sendEmailVerification();
+              user.sendEmailVerification();
               Get.back();
+              _setToast("Please check your email at ${emailCon.text}");
               _resetTextField();
-              _setToast("Please check your email");
             },
             child: const Text("Resend")),
         TextButton(
             onPressed: () {
               Get.back();
+              _setToast("Please check your email at ${emailCon.text}");
               _resetTextField();
-              _setToast("Please check your email");
             },
             child: const Text("Ok")),
       ],
@@ -101,12 +104,13 @@ class AddEmployeeController extends GetxController {
   }
 
   Future<void> register() async {
+    isCreatingEmployee.value = true;
     try {
-      final credential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final credential = await _auth.createUserWithEmailAndPassword(
         email: emailCon.text,
         password: "password",
       );
+
       if (credential.user == null) return;
       await _employees.doc(credential.user!.uid).set({
         "uid": credential.user!.uid,
@@ -123,17 +127,19 @@ class AddEmployeeController extends GetxController {
                 context: Get.context!,
                 title: "Almost Done!",
                 message:
-                    "We have sent you an email to verify your account. Please follow the instructions.",
-                // user: credential.user!,
+                    "We have sent you an email to ${emailCon.text}. Please follow the instructions to verify your account.",
+                user: credential.user!,
               ));
+      // signout to cancel stream authStateChanges in main.dart
+      await _auth.signOut();
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
-        print('The password provided is too weak.');
-      } else if (e.code == 'email-already-in-use') {
+      if (e.code == 'email-already-in-use') {
         _setToast("Email has been registered");
       }
     } catch (e) {
       print(e);
+    } finally {
+      isCreatingEmployee.value = false;
     }
   }
 }

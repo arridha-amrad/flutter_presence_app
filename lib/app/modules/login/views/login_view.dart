@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
+import 'package:presence_app/app/modules/login/controllers/login_controller.dart';
 import 'package:presence_app/app/routes/app_pages.dart';
-
-import '../controllers/login_controller.dart';
 
 class LoginView extends GetView<LoginController> {
   const LoginView({Key? key}) : super(key: key);
@@ -41,11 +39,8 @@ class LoginView extends GetView<LoginController> {
                     CheckboxListTile(
                       contentPadding: EdgeInsets.zero,
                       value: controller.isShowPassword.value,
-                      onChanged: (val) {
-                        if (val != null) {
-                          controller.isShowPassword.value = val;
-                        }
-                      },
+                      onChanged: (val) =>
+                          controller.isShowPassword.value = val!,
                       controlAffinity: ListTileControlAffinity.leading,
                       title: const Text("Show Password"),
                     ),
