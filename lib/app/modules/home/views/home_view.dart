@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:presence_app/app/modules/home/controllers/home_controller.dart';
 import 'package:presence_app/app/modules/home/widgets/update_password_form.dart';
+import 'package:presence_app/app/routes/app_pages.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({Key? key}) : super(key: key);
@@ -13,7 +14,9 @@ class HomeView extends GetView<HomeController> {
           title: const Text('HomeView'),
           centerTitle: true,
           actions: [
-            IconButton(onPressed: () {}, icon: const Icon(Icons.person_add))
+            IconButton(
+                onPressed: () => Get.toNamed(Routes.PROFILE),
+                icon: const Icon(Icons.person))
           ],
         ),
         floatingActionButton: FloatingActionButton(

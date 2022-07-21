@@ -7,6 +7,7 @@ class AddEmployeeController extends GetxController {
   TextEditingController emailCon = TextEditingController();
   TextEditingController nipCon = TextEditingController();
   TextEditingController nameCon = TextEditingController();
+  TextEditingController passwordConAdmin = TextEditingController();
 
   final CollectionReference _employees =
       FirebaseFirestore.instance.collection("employees");
@@ -18,11 +19,11 @@ class AddEmployeeController extends GetxController {
   RxBool isEmailFilled = false.obs;
   RxBool isNipFilled = false.obs;
   RxBool isNameFilled = false.obs;
-  RxBool isCreatingEmployee = false.obs;
+  RxBool isLoading = false.obs;
+  RxBool isShowPasswordAdmin = false.obs;
 
   @override
   void onInit() {
-    print("Hello World");
     emailCon.addListener(() => isEmailFilled.value = emailCon.text.isNotEmpty);
     nipCon.addListener(() => isNipFilled.value = nipCon.text.isNotEmpty);
     nameCon.addListener(() => isNameFilled.value = nameCon.text.isNotEmpty);
@@ -35,27 +36,6 @@ class AddEmployeeController extends GetxController {
     nipCon.dispose();
     nameCon.dispose();
     super.onClose();
-  }
-
-  String? validateEmail(String? val) {
-    if (val != null) {
-      if (!val.isEmail) return "Email is not valid";
-    }
-    return null;
-  }
-
-  String? validateNip(String? val) {
-    if (val != null) {
-      if (val.isEmpty) return "Nip is required";
-    }
-    return null;
-  }
-
-  String? validateName(String? val) {
-    if (val != null) {
-      if (val.isEmpty) return "Name is required";
-    }
-    return null;
   }
 
   void _setToast(String message) {
@@ -86,14 +66,6 @@ class AddEmployeeController extends GetxController {
       actions: [
         TextButton(
             onPressed: () {
-              user.sendEmailVerification();
-              Get.back();
-              _setToast("Please check your email at ${emailCon.text}");
-              _resetTextField();
-            },
-            child: const Text("Resend")),
-        TextButton(
-            onPressed: () {
               Get.back();
               _setToast("Please check your email at ${emailCon.text}");
               _resetTextField();
@@ -103,43 +75,82 @@ class AddEmployeeController extends GetxController {
     );
   }
 
-  Future<void> register() async {
-    isCreatingEmployee.value = true;
+  Future<UserCredential?> _registerNewEmployee() async {
+    UserCredential? userCredential;
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
-        email: emailCon.text,
-        password: "password",
-      );
-
-      if (credential.user == null) return;
-      await _employees.doc(credential.user!.uid).set({
-        "uid": credential.user!.uid,
-        "nip": nipCon.text,
-        "name": nameCon.text,
-        "email": emailCon.text,
-        "createdAt": DateTime.now(),
-        "isFirstLogin": true,
-      });
+          email: emailCon.text, password: "password");
+      // send an email for new account-verification
       await credential.user!.sendEmailVerification();
+      userCredential = credential;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == "email-already-in-use") {
+        _setToast("Email has been registered");
+      }
+      if (e.code == "invalid-email") {
+        _setToast("Email is not valid");
+      }
+    } catch (e) {
+      print("========================== error code : $e");
+    }
+    return userCredential;
+  }
+
+  Future<void> _storeNewEmployeeData(String uid) async {
+    await _employees.doc(uid).set({
+      "uid": uid,
+      "nip": nipCon.text,
+      "name": nameCon.text,
+      "email": emailCon.text,
+      "createdAt": DateTime.now().toIso8601String(),
+      "isFirstLogin": true,
+      "role": "employee",
+    });
+  }
+
+  Future<UserCredential?> _login([String? email]) async {
+    UserCredential? credential;
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email ?? _auth.currentUser!.email!,
+        password: passwordConAdmin.text,
+      );
+      credential = credential;
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == "wrong-password") {
+        _setToast("Invalid password");
+      }
+    } catch (e) {
+      print(e);
+    }
+    return credential;
+  }
+
+  Future<void> addEmployee() async {
+    isLoading.value = true;
+    final email = _auth.currentUser!.email;
+    try {
+      final credential = await _login();
+      if (credential == null) return;
+      final userCredential = await _registerNewEmployee();
+      if (userCredential == null) return;
+      await _storeNewEmployeeData(userCredential.user!.uid);
+      await _auth.signOut();
+      await _login(email);
       showDialog(
           context: Get.context!,
           builder: (context) => _setAlertdialog(
                 context: Get.context!,
                 title: "Almost Done!",
                 message:
-                    "We have sent you an email to ${emailCon.text}. Please follow the instructions to verify your account.",
-                user: credential.user!,
+                    "We have sent an email to ${emailCon.text}. Please follow the instructions to verify the account.",
+                user: userCredential.user!,
               ));
-      // signout to cancel stream authStateChanges in main.dart
-      await _auth.signOut();
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'email-already-in-use') {
-        _setToast("Email has been registered");
-      }
     } catch (e) {
       print(e);
     } finally {
-      isCreatingEmployee.value = false;
+      isLoading.value = false;
     }
   }
 }

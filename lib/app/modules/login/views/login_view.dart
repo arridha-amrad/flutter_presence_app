@@ -65,16 +65,6 @@ class LoginView extends GetView<LoginController> {
                           onPressed: () => Get.toNamed(Routes.FORGOT_PASSWORD),
                           child: const Text("forgot password ?")),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text("Don't have an account ?"),
-                        TextButton(
-                            onPressed: () => Get.offNamed(Routes.ADD_EMPLOYEE),
-                            child: const Text("register")),
-                      ],
-                    ),
-                    const SizedBox(height: 12.0),
                   ],
                 );
               })),
