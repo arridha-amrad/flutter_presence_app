@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:presence_app/app/helpers/firebase_firestore/employee_controller.dart';
 import 'package:presence_app/app/modules/home/controllers/home_controller.dart';
 import 'package:presence_app/app/modules/home/widgets/update_password_form.dart';
 import 'package:presence_app/app/routes/app_pages.dart';
@@ -24,8 +25,8 @@ class HomeView extends GetView<HomeController> {
           child: const Icon(Icons.logout),
           onPressed: () => controller.logout(),
         ),
-        body: FutureBuilder(
-            future: controller.getUser(),
+        body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+            stream: controller.getEmployee(),
             builder: (context,
                 AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>>
                     snapshot) {

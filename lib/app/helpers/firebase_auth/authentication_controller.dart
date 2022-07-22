@@ -1,14 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
 import 'package:presence_app/app/dto/auth_response_dto.dart';
 
-class AuthenticationFirebase {
-  static final _auth = FirebaseAuth.instance;
+class AuthenticationController extends GetxController {
+  final _auth = FirebaseAuth.instance;
 
-  static Future<void> logout() async {
+  Future<void> logout() async {
     await _auth.signOut();
   }
 
-  static Future<AuthResponseDTO> register({
+  User? getAuthUser() => _auth.currentUser!;
+
+  Future<AuthResponseDTO> register({
     required String email,
     required String password,
   }) async {
@@ -30,7 +33,7 @@ class AuthenticationFirebase {
     return responseDTO;
   }
 
-  static Future<AuthResponseDTO> login({
+  Future<AuthResponseDTO> login({
     required String email,
     required String password,
   }) async {

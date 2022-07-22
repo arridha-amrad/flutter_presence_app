@@ -1,19 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
+import 'package:presence_app/app/helpers/helpers.dart';
+
 import 'package:presence_app/app/routes/app_pages.dart';
 
 class ProfileController extends GetxController {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final _employees = FirebaseFirestore.instance.collection("employees");
+  final _authController = Get.put(AuthenticationController());
+  final _employeeController = Get.put(EmployeeController());
 
   Stream<DocumentSnapshot<Map<String, dynamic>>> getUser() async* {
-    final uid = _auth.currentUser!.uid;
-    yield* _employees.doc(uid).snapshots();
+    yield* _employeeController.getEmployee(_authController.getAuthUser()!.uid);
   }
 
   Future<void> logout() async {
-    await _auth.signOut();
+    await _authController.logout();
     Get.offAllNamed(Routes.LOGIN);
   }
 }

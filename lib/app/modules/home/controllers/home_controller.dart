@@ -3,9 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:presence_app/app/constant.dart';
-import 'package:presence_app/app/helpers/alert.dart';
-import 'package:presence_app/app/helpers/firebase_auth/authentication_firebase.dart';
-import 'package:presence_app/app/helpers/firebase_firestore/employee_firestore.dart';
+import 'package:presence_app/app/helpers/helpers.dart';
 
 import 'package:presence_app/app/routes/app_pages.dart';
 
@@ -15,6 +13,9 @@ class HomeController extends GetxController {
   final _auth = FirebaseAuth.instance;
   final employee = FirebaseFirestore.instance.collection("employees");
 
+  final _authController = Get.put(AuthenticationController());
+  final _employeeController = Get.put(EmployeeController());
+
   RxBool isFirstLogin = false.obs;
   RxBool isShowPassword = false.obs;
   RxBool isPasswordValid = false.obs;
@@ -23,19 +24,17 @@ class HomeController extends GetxController {
   Future<void> updatePassword() async {
     isLoading.value = true;
     final user = _auth.currentUser!;
-    await EmployeeFireStore.update(
-        userId: user.uid, data: {"isFirstLogin": false});
+    await _employeeController
+        .updateEmployee(userId: user.uid, data: {"isFirstLogin": false});
     await user.updatePassword(passwordCon.text);
-    await AuthenticationFirebase.logout();
-    await AuthenticationFirebase.login(
-        email: user.email!, password: passwordCon.text);
+    await _authController.logout();
+    await _authController.login(email: user.email!, password: passwordCon.text);
     isLoading.value = false;
     Helpers.setToast(message: "Password updated successfully");
   }
 
-  Future<DocumentSnapshot<Map<String, dynamic>>> getUser() async {
-    final uid = _auth.currentUser!.uid;
-    return employee.doc(uid).get();
+  Stream<DocumentSnapshot<Map<String, dynamic>>> getEmployee() async* {
+    yield* _employeeController.getEmployee(_auth.currentUser!.uid);
   }
 
   @override

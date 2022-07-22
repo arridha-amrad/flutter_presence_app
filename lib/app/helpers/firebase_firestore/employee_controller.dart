@@ -1,9 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
 
-class EmployeeFireStore {
-  static final _employee = FirebaseFirestore.instance.collection("employees");
+class EmployeeController extends GetxController {
+  final _employee = FirebaseFirestore.instance.collection("employees");
 
-  static Future<String?> update(
+  Stream<DocumentSnapshot<Map<String, dynamic>>> getEmployee(
+      String userId) async* {
+    yield* _employee.doc(userId).snapshots();
+  }
+
+  Future<String?> updateEmployee(
       {required String userId, required Map<String, dynamic> data}) async {
     String? message;
     try {
@@ -15,7 +21,7 @@ class EmployeeFireStore {
     return message;
   }
 
-  static Future<void> save({
+  Future<void> saveEmployee({
     required String userId,
     required Map<String, dynamic> data,
   }) async {

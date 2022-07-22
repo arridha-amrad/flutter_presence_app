@@ -1,9 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:presence_app/app/constant.dart';
-import 'package:presence_app/app/helpers/alert.dart';
-import 'package:presence_app/app/helpers/firebase_auth/authentication_firebase.dart';
+import 'package:presence_app/app/helpers/helpers.dart';
 
 class UpdatePasswordController extends GetxController {
   TextEditingController oldPassCon = TextEditingController();
@@ -11,7 +10,9 @@ class UpdatePasswordController extends GetxController {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  RxBool isLoading = false.obs;
+  final _authController = Get.put(AuthenticationController());
+
+  final RxBool isLoading = false.obs;
   RxBool isNewPassValid = false.obs;
   RxString errorText = "".obs;
 
@@ -32,7 +33,7 @@ class UpdatePasswordController extends GetxController {
 
   Future<void> updatePassword() async {
     isLoading.value = true;
-    final loginResponse = await AuthenticationFirebase.login(
+    final loginResponse = await _authController.login(
       email: _auth.currentUser!.email!,
       password: oldPassCon.text,
     );

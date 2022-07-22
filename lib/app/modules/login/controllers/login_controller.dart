@@ -1,13 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:presence_app/app/helpers/alert.dart';
-import 'package:presence_app/app/helpers/firebase_auth/authentication_firebase.dart';
+import 'package:presence_app/app/helpers/helpers.dart';
+
 import 'package:presence_app/app/routes/app_pages.dart';
 
 class LoginController extends GetxController {
   TextEditingController emailCon = TextEditingController();
   TextEditingController passwordCon = TextEditingController();
+
+  final _authController = Get.put(AuthenticationController());
 
   RxBool isEmailFilled = false.obs;
   RxBool isPasswordFilled = false.obs;
@@ -53,7 +55,7 @@ class LoginController extends GetxController {
 
   Future<void> login() async {
     try {
-      final res = await AuthenticationFirebase.login(
+      final res = await _authController.login(
           email: emailCon.text, password: passwordCon.text);
       if (res.getUserCredential == null) {
         Helpers.setToast(message: res.message!);

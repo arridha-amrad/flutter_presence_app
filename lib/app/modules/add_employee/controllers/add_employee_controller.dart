@@ -1,10 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:presence_app/app/helpers/alert.dart';
-import 'package:presence_app/app/helpers/firebase_auth/authentication_firebase.dart';
-import 'package:presence_app/app/helpers/firebase_firestore/employee_firestore.dart';
+import 'package:presence_app/app/helpers/helpers.dart';
 
 class AddEmployeeController extends GetxController {
   TextEditingController emailCon = TextEditingController();
@@ -13,6 +10,9 @@ class AddEmployeeController extends GetxController {
   TextEditingController passwordConAdmin = TextEditingController();
 
   final _auth = FirebaseAuth.instance;
+
+  final _authController = Get.put(AuthenticationController());
+  final _employeeController = Get.put(EmployeeController());
 
   RxBool isEmailValid = false.obs;
   RxBool isNipFilled = false.obs;
@@ -51,14 +51,14 @@ class AddEmployeeController extends GetxController {
   Future<void> addEmployee() async {
     isLoading.value = true;
     final email = _auth.currentUser!.email!;
-    final loginResponse = await AuthenticationFirebase.login(
+    final loginResponse = await _authController.login(
       email: email,
       password: passwordConAdmin.text,
     );
     if (loginResponse.getUserCredential == null) {
       errorText.value = "Verification password failed";
     } else {
-      final response = await AuthenticationFirebase.register(
+      final response = await _authController.register(
         email: emailCon.text,
         password: "password",
       );
@@ -68,7 +68,7 @@ class AddEmployeeController extends GetxController {
         // close verification admin dialog
         Get.back();
         final user = response.getUserCredential!.user!;
-        await EmployeeFireStore.save(userId: user.uid, data: {
+        await _employeeController.saveEmployee(userId: user.uid, data: {
           "uid": user.uid,
           "nip": nipCon.text,
           "name": nameCon.text,
@@ -77,8 +77,8 @@ class AddEmployeeController extends GetxController {
           "isFirstLogin": true,
           "role": "employee",
         });
-        await AuthenticationFirebase.logout();
-        final res = await AuthenticationFirebase.login(
+        await _authController.logout();
+        final res = await _authController.login(
             email: email, password: passwordConAdmin.text);
         if (res.getUserCredential != null) {
           showDialog(
