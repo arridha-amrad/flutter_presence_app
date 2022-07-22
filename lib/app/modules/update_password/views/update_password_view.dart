@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:presence_app/app/widgets/button_loading.dart';
+import 'package:presence_app/app/widgets/text_input_password.dart';
 
 import '../controllers/update_password_controller.dart';
 
@@ -10,38 +12,32 @@ class UpdatePasswordView extends GetView<UpdatePasswordController> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('UpdatePasswordView'),
+          title: const Text('Update Password'),
           centerTitle: true,
         ),
-        body: ListView(
-          padding: const EdgeInsets.all(12),
-          children: [
-            const SizedBox(height: 12),
-            TextFormField(
-              obscureText: true,
-              controller: controller.oldPassCon,
-              decoration: const InputDecoration(
-                  labelText: "Old Password", border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              obscureText: true,
-              controller: controller.newPassCon,
-              decoration: const InputDecoration(
-                  helperMaxLines: 5,
-                  helperText:
-                      "Password requires minimum six characters, at least one letter, one number and one special character.",
-                  labelText: "New Password",
-                  border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 12),
-            Obx(() => ElevatedButton(
-                onPressed: controller.isLoading.isFalse &&
-                        controller.isNewPassValid.isTrue
-                    ? () => controller.updatePassword()
-                    : null,
-                child: const Text("Update")))
-          ],
-        ));
+        body: Obx(() => ListView(
+              padding: const EdgeInsets.all(12),
+              children: [
+                TextInputPassword(
+                  errorText: controller.errorText.value,
+                  label: "Old Password",
+                  controller: controller.oldPassCon,
+                ),
+                TextInputPassword(
+                  label: "New Password",
+                  controller: controller.newPassCon,
+                  isShowHelperText: true,
+                ),
+                const SizedBox(height: 12),
+                ButtonLoading(
+                  isLoading: controller.isLoading.value,
+                  label: "Update",
+                  function: controller.isLoading.isFalse &&
+                          controller.isNewPassValid.isTrue
+                      ? () => controller.updatePassword()
+                      : null,
+                )
+              ],
+            )));
   }
 }

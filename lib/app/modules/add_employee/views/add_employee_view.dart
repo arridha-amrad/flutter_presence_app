@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:presence_app/app/widgets/text_input.dart';
+import 'package:presence_app/app/widgets/text_input_password.dart';
 import '../controllers/add_employee_controller.dart';
 
 class AddEmployeeView extends GetView<AddEmployeeController> {
@@ -16,33 +18,15 @@ class AddEmployeeView extends GetView<AddEmployeeController> {
               child: ListView(
                 children: [
                   const SizedBox(height: 12.0),
-                  TextFormField(
-                    keyboardType: TextInputType.emailAddress,
+                  TextInput(
+                    textInputType: TextInputType.emailAddress,
+                    label: "Email",
                     controller: controller.emailCon,
-                    decoration: const InputDecoration(
-                      labelText: "Email",
-                      border: OutlineInputBorder(),
-                    ),
                   ),
-                  const SizedBox(height: 12.0),
-                  TextFormField(
-                    controller: controller.nipCon,
-                    decoration: const InputDecoration(
-                      labelText: "NIP",
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12.0),
-                  TextFormField(
-                    controller: controller.nameCon,
-                    decoration: const InputDecoration(
-                      labelText: "Name",
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12.0),
+                  TextInput(label: "NIP", controller: controller.nipCon),
+                  TextInput(label: "Name", controller: controller.nameCon),
                   ElevatedButton(
-                      onPressed: controller.isEmailFilled.isTrue &&
+                      onPressed: controller.isEmailValid.isTrue &&
                               controller.isNipFilled.isTrue &&
                               controller.isNameFilled.isTrue &&
                               controller.isLoading.isFalse
@@ -51,9 +35,9 @@ class AddEmployeeView extends GetView<AddEmployeeController> {
                                 builder: (context) => _alertDialog(context),
                               )
                           : null,
-                      child: Text(
-                        controller.isLoading.isTrue ? "Loading..." : "Add",
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      child: const Text(
+                        "Add",
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       )),
                 ],
               ),
@@ -63,42 +47,45 @@ class AddEmployeeView extends GetView<AddEmployeeController> {
   AlertDialog _alertDialog(BuildContext context) {
     final height = MediaQuery.of(context).size.height / 4;
     return AlertDialog(
-      content: SizedBox(
-        height: height < 200 ? 200 : height,
-        child: Obx(() => Column(
-              children: [
-                TextFormField(
-                  obscureText: !controller.isShowPasswordAdmin.value,
-                  controller: controller.passwordConAdmin,
-                  decoration: const InputDecoration(
-                    hintText: "Password",
-                  ),
-                ),
-                CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  value: controller.isShowPasswordAdmin.value,
-                  onChanged: (val) =>
-                      controller.isShowPasswordAdmin.value = val!,
-                  title: const Text("Show password"),
-                )
-              ],
-            )),
+      title: const Text(
+        "Verification Admin",
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+        ),
       ),
+      content: Obx(() => SizedBox(
+            height: height < 200 ? 200 : height,
+            child: Column(
+              children: [
+                TextInputPassword(
+                  errorText: controller.errorText.value,
+                  label: "Password",
+                  borderType: const UnderlineInputBorder(),
+                  controller: controller.passwordConAdmin,
+                ),
+              ],
+            ),
+          )),
       actions: [
         TextButton(
             onPressed: () {
-              controller.addEmployee();
-              Get.back();
-            },
-            child: const Text("Submit")),
-        TextButton(
-            onPressed: () {
               controller.passwordConAdmin.clear();
-              controller.isShowPasswordAdmin.value = false;
+              controller.errorText.value = "";
               Get.back();
             },
-            child: const Text("Cancel"))
+            child: const Text("Cancel")),
+        Obx(() => TextButton(
+            onPressed: controller.isLoading.isFalse &&
+                    controller.isPasswordFilled.isTrue
+                ? () => controller.addEmployee()
+                : null,
+            child: controller.isLoading.isTrue
+                ? const SizedBox(
+                    height: 15,
+                    width: 15,
+                    child: CircularProgressIndicator(),
+                  )
+                : const Text("Submit"))),
       ],
     );
   }

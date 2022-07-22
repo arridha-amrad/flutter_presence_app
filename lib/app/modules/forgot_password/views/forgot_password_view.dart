@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:presence_app/app/widgets/button_loading.dart';
+import 'package:presence_app/app/widgets/text_input.dart';
 
 import '../controllers/forgot_password_controller.dart';
 
@@ -18,29 +20,21 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
           child: Obx(() => ListView(
                 children: [
                   const SizedBox(height: 12.0),
-                  TextFormField(
-                    keyboardType: TextInputType.emailAddress,
+                  TextInput(
+                    label: "Email",
                     controller: controller.emailCon,
-                    decoration: const InputDecoration(
-                        helperMaxLines: 5,
-                        helperText: "Please insert your registered email.",
-                        labelText: "Email",
-                        border: OutlineInputBorder()),
+                    textInputType: TextInputType.emailAddress,
+                    helperText: "Please insert your registered email.",
                   ),
                   const SizedBox(height: 12.0),
-                  ElevatedButton(
-                    onPressed: controller.isEmailValid.isTrue &&
+                  ButtonLoading(
+                    isLoading: controller.isLoading.value,
+                    label: "Submit",
+                    function: controller.isEmailValid.isTrue &&
                             controller.isLoading.isFalse
                         ? () => controller.sendResetPasswordRequest()
                         : null,
-                    child: controller.isLoading.isTrue
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(),
-                          )
-                        : const Text("Submit"),
-                  )
+                  ),
                 ],
               )),
         ));

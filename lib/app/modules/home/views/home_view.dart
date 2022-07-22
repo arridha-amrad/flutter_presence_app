@@ -42,7 +42,7 @@ class HomeView extends GetView<HomeController> {
               }
               final user = data.data()!;
               if (user["isFirstLogin"]) {
-                showUpdatePassword(controller);
+                showUpdatePasswordDialog(controller);
               }
               return ListView(
                 children: [

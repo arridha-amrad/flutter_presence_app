@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:presence_app/app/helpers/alert.dart';
+import 'package:presence_app/app/helpers/firebase_firestore/employee_firestore.dart';
 
 class UpdateProfileController extends GetxController {
   TextEditingController nipCon = TextEditingController();
@@ -26,24 +28,11 @@ class UpdateProfileController extends GetxController {
     super.onClose();
   }
 
-  void _setToast({required String message, int? duration = 5}) {
-    ScaffoldMessenger.of(Get.context!).showSnackBar(SnackBar(
-        duration: Duration(seconds: duration!), content: Text(message)));
-  }
-
   Future<void> updateProfile({required String userId}) async {
     isLoading.value = true;
-    try {
-      await employees
-          .collection("employees")
-          .doc(userId)
-          .update({"name": nameCon.text});
-      _setToast(message: "Profile updated successfully");
-      Get.back();
-    } catch (e) {
-      print(e);
-    } finally {
-      isLoading.value = false;
-    }
+    final res = await EmployeeFireStore.update(
+        userId: userId, data: {"name": nameCon.text});
+    Helpers.setToast(message: res ?? "Profile updated successfully");
+    isLoading.value = false;
   }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:presence_app/app/modules/home/controllers/home_controller.dart';
+import 'package:presence_app/app/widgets/button_loading.dart';
+import 'package:presence_app/app/widgets/text_input_password.dart';
 
-showUpdatePassword(HomeController controller) {
+showUpdatePasswordDialog(HomeController controller) {
   return Future.delayed(
       Duration.zero,
       () => showDialog(
@@ -23,27 +25,11 @@ showUpdatePassword(HomeController controller) {
                           style: TextStyle(fontSize: 14),
                         ),
                         const SizedBox(height: 17.0),
-                        TextFormField(
+                        TextInputPassword(
+                          label: "Password",
+                          borderType: const UnderlineInputBorder(),
                           controller: controller.passwordCon,
-                          obscureText: !controller.isShowPassword.value,
-                          decoration: const InputDecoration(
-                              helperText:
-                                  "Minimum six characters, at least one letter, one number and one special character.",
-                              helperMaxLines: 3,
-                              hintText: "Password",
-                              border: UnderlineInputBorder()),
-                        ),
-                        CheckboxListTile(
-                          contentPadding: EdgeInsets.zero,
-                          value: controller.isShowPassword.value,
-                          dense: true,
-                          onChanged: (val) {
-                            if (val != null) {
-                              controller.isShowPassword.value = val;
-                            }
-                          },
-                          title: const Text("Show Password"),
-                          controlAffinity: ListTileControlAffinity.leading,
+                          isShowHelperText: true,
                         ),
                         const SizedBox(height: 12.0),
                       ],
@@ -53,14 +39,16 @@ showUpdatePassword(HomeController controller) {
                 actions: [
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
-                        onPressed: controller.isPasswordValid.value
-                            ? () {
-                                controller.updatePassword();
-                                Get.back();
-                              }
-                            : null,
-                        child: const Text("Update Password")),
+                    child: ButtonLoading(
+                      isLoading: controller.isLoading.value,
+                      label: "Update Password",
+                      function: controller.isPasswordValid.value
+                          ? () {
+                              controller.updatePassword();
+                              Get.back();
+                            }
+                          : null,
+                    ),
                   )
                 ],
               ))));

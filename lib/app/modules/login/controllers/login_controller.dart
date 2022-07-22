@@ -1,37 +1,20 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:presence_app/app/helpers/alert.dart';
+import 'package:presence_app/app/helpers/firebase_auth/authentication_firebase.dart';
 import 'package:presence_app/app/routes/app_pages.dart';
 
 class LoginController extends GetxController {
   TextEditingController emailCon = TextEditingController();
   TextEditingController passwordCon = TextEditingController();
 
-  final formKey = GlobalKey<FormState>();
-
   RxBool isEmailFilled = false.obs;
   RxBool isPasswordFilled = false.obs;
-  RxBool isShowPassword = false.obs;
-
-  RxString alertMessage = "".obs;
-
-  String? validateEmail(String? val) {
-    if (val != null) {
-      if (!val.isEmail) return "Email is not valid";
-    }
-    return null;
-  }
-
-  String? validatePassword(String? val) {
-    if (val != null) {
-      if (val.isEmpty) return "Password is required";
-    }
-    return null;
-  }
 
   @override
   void onInit() {
-    emailCon.addListener(() => isEmailFilled.value = emailCon.text.isNotEmpty);
+    emailCon.addListener(() => isEmailFilled.value = emailCon.text.isEmail);
     passwordCon.addListener(
         () => isPasswordFilled.value = passwordCon.text.isNotEmpty);
     super.onInit();
@@ -42,13 +25,6 @@ class LoginController extends GetxController {
     emailCon.dispose();
     passwordCon.dispose();
     super.onClose();
-  }
-
-  void _setToast(String message) {
-    ScaffoldMessenger.of(Get.context!).showSnackBar(SnackBar(
-      content: Text(message),
-      duration: const Duration(seconds: 5),
-    ));
   }
 
   AlertDialog _setAlertdialog({
@@ -65,7 +41,9 @@ class LoginController extends GetxController {
             onPressed: () {
               user.sendEmailVerification();
               Get.back();
-              _setToast("Please check your email");
+              Helpers.setToast(
+                  message: "Please check your inbox at ${user.email}",
+                  duration: 10);
             },
             child: const Text("Resend")),
         TextButton(onPressed: () => Get.back(), child: const Text("Ok")),
@@ -75,9 +53,13 @@ class LoginController extends GetxController {
 
   Future<void> login() async {
     try {
-      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      final res = await AuthenticationFirebase.login(
           email: emailCon.text, password: passwordCon.text);
-      if (credential.user == null) return;
+      if (res.getUserCredential == null) {
+        Helpers.setToast(message: res.message!);
+        return;
+      }
+      final credential = res.getUserCredential!;
       if (!credential.user!.emailVerified) {
         showDialog(
             context: Get.context!,
@@ -90,12 +72,8 @@ class LoginController extends GetxController {
       } else {
         Get.offNamed(Routes.HOME);
       }
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        _setToast("User not found");
-      } else if (e.code == 'wrong-password') {
-        _setToast("Invalid email and password");
-      }
+    } catch (e) {
+      print(e);
     }
   }
 }

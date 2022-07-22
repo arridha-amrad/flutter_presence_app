@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:presence_app/app/widgets/button_loading.dart';
+import 'package:presence_app/app/widgets/text_input.dart';
 
 import '../controllers/update_profile_controller.dart';
 
@@ -21,33 +23,29 @@ class UpdateProfileView extends GetView<UpdateProfileController> {
           padding: const EdgeInsets.all(12),
           children: [
             const SizedBox(height: 12),
-            TextFormField(
-              readOnly: true,
+            TextInput(
+              label: "Nip",
               controller: controller.nipCon,
-              decoration: const InputDecoration(
-                  labelText: "Nip", border: OutlineInputBorder()),
+              isReadOnly: true,
             ),
-            const SizedBox(height: 12),
-            TextFormField(
-              readOnly: true,
+            TextInput(
+              textInputType: TextInputType.emailAddress,
+              label: "Email",
               controller: controller.emailCon,
-              decoration: const InputDecoration(
-                  labelText: "Email", border: OutlineInputBorder()),
+              isReadOnly: true,
             ),
-            const SizedBox(height: 12),
-            TextFormField(
+            TextInput(
+              label: "Name",
               controller: controller.nameCon,
-              decoration: const InputDecoration(
-                  labelText: "Name", border: OutlineInputBorder()),
             ),
-            const SizedBox(height: 12),
-            Obx(() => ElevatedButton(
-                onPressed: controller.isLoading.isFalse &&
-                        controller.isNameValid.isTrue
-                    ? () => controller.updateProfile(userId: user["uid"])
-                    : null,
-                child: Text(
-                    controller.isLoading.isTrue ? "Loading..." : "Update")))
+            Obx(() => ButtonLoading(
+                  isLoading: controller.isLoading.value,
+                  label: "Update",
+                  function: controller.isLoading.isFalse &&
+                          controller.isNameValid.isTrue
+                      ? () => controller.updateProfile(userId: user["uid"])
+                      : null,
+                ))
           ],
         ));
   }
