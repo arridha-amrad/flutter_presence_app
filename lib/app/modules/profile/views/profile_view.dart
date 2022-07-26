@@ -45,7 +45,10 @@ class ProfileView extends GetView<ProfileController> {
                         height: 150,
                         width: 150,
                         color: Colors.grey,
-                        child: Image.network(user["avatarUrl"]),
+                        child: Image.network(
+                          user["avatarUrl"],
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ),

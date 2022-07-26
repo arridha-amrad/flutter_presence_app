@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "368184108664-il8tipl8460n1rd4rgdpjlcaj7jikqhu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ari.presence_app",
+            "certificate_hash": "bb9cf95c5df9382db26b3589213841c89d44cfb3"
+          }
+        },
+        {
           "client_id": "368184108664-00tk2rllag38hdclffmj0umlvab5vv2i.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,6 +37,13 @@
             {
               "client_id": "368184108664-00tk2rllag38hdclffmj0umlvab5vv2i.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "368184108664-pftomk6s4tf2jps70gtm2s9vlb4vuus3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ari.presenceApp"
+              }
             }
           ]
         }
