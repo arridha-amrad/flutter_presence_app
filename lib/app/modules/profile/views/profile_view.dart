@@ -35,9 +35,20 @@ class ProfileView extends GetView<ProfileController> {
               }
               final user = snapshot.data!.data()!;
               return ListView(
-                padding: const EdgeInsets.all(12.0),
+                padding: const EdgeInsets.all(12),
                 children: [
-                  const CircleAvatar(radius: 50),
+                  Align(
+                    alignment: Alignment.center,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(150),
+                      child: Container(
+                        height: 150,
+                        width: 150,
+                        color: Colors.grey,
+                        child: Image.network(user["avatarUrl"]),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 12.0),
                   Text(
                     user["name"].toUpperCase(),

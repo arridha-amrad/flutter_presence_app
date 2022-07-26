@@ -76,6 +76,8 @@ class AddEmployeeController extends GetxController {
           "createdAt": DateTime.now().toIso8601String(),
           "isFirstLogin": true,
           "role": "employee",
+          "avatarUrl":
+              "https://firebasestorage.googleapis.com/v0/b/flutter-presence-081215.appspot.com/o/avatar%2Fprofil-pic_dummy.png?alt=media&token=ee884ffb-e798-4a48-a81d-ea2ab03afa5b",
         });
         await _authController.logout();
         final res = await _authController.login(

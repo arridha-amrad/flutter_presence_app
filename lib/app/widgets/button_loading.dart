@@ -25,7 +25,12 @@ class ButtonLoading extends StatelessWidget {
                 color: Colors.black54,
               ),
             )
-          : const Text("Submit"),
+          : Text(
+              label.toUpperCase(),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
     );
   }
 }
