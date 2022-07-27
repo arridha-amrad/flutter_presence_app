@@ -11,6 +11,14 @@ class AddEmployeeController extends GetxController {
 
   final _auth = FirebaseAuth.instance;
 
+  final roles = [
+    "Front-end developer",
+    "Back-end developer",
+    "Android developer",
+    "Ios developer",
+    "Dev-ops",
+  ];
+
   final _authController = Get.put(AuthenticationController());
   final _employeeController = Get.put(EmployeeController());
 
@@ -19,6 +27,8 @@ class AddEmployeeController extends GetxController {
   RxBool isNameFilled = false.obs;
   RxBool isLoading = false.obs;
   RxBool isPasswordFilled = false.obs;
+
+  RxString role = "".obs;
 
   RxString errorText = "".obs;
 
@@ -75,7 +85,7 @@ class AddEmployeeController extends GetxController {
           "email": emailCon.text,
           "createdAt": DateTime.now().toIso8601String(),
           "isFirstLogin": true,
-          "role": "employee",
+          "role": role.value,
           "avatarUrl":
               "https://firebasestorage.googleapis.com/v0/b/flutter-presence-081215.appspot.com/o/avatar%2Fprofil-pic_dummy.png?alt=media&token=ee884ffb-e798-4a48-a81d-ea2ab03afa5b",
         });

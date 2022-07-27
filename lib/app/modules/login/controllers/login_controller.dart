@@ -72,7 +72,7 @@ class LoginController extends GetxController {
                 message:
                     "You need to verify your email before using this app."));
       } else {
-        Get.offNamed(Routes.HOME);
+        Get.offNamed(Routes.ENTRY);
       }
     } catch (e) {
       print(e);

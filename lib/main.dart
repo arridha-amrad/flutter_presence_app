@@ -36,7 +36,7 @@ Future<void> main() async {
                 primarySwatch: Colors.green,
                 appBarTheme: const AppBarTheme(elevation: 0.0)),
             title: "Application",
-            initialRoute: user == null ? Routes.LOGIN : Routes.HOME,
+            initialRoute: user == null ? Routes.LOGIN : Routes.ENTRY,
             getPages: AppPages.routes,
           );
         }),

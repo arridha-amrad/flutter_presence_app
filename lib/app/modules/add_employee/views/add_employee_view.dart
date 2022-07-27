@@ -6,6 +6,7 @@ import '../controllers/add_employee_controller.dart';
 
 class AddEmployeeView extends GetView<AddEmployeeController> {
   const AddEmployeeView({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,6 +26,14 @@ class AddEmployeeView extends GetView<AddEmployeeController> {
                   ),
                   TextInput(label: "NIP", controller: controller.nipCon),
                   TextInput(label: "Name", controller: controller.nameCon),
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: "Role",
+                    ),
+                    items: controller.roles.map(_buildRoleOption).toList(),
+                    onChanged: (val) => controller.role.value = val!,
+                  ),
                   ElevatedButton(
                       onPressed: controller.isEmailValid.isTrue &&
                               controller.isNipFilled.isTrue &&
@@ -43,6 +52,11 @@ class AddEmployeeView extends GetView<AddEmployeeController> {
               ),
             )));
   }
+
+  DropdownMenuItem<String> _buildRoleOption(String role) => DropdownMenuItem(
+        value: role,
+        child: Text(role),
+      );
 
   AlertDialog _alertDialog(BuildContext context) {
     final height = MediaQuery.of(context).size.height / 4;
