@@ -2,13 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:presence_app/app/helpers/firebase_firestore/employee_controller.dart';
 
 import 'package:presence_app/app/modules/home/controllers/home_controller.dart';
 import 'package:presence_app/app/modules/home/widgets/update_password_form.dart';
-import 'package:presence_app/app/modules/presence/controllers/presence_controller.dart';
 import 'package:presence_app/app/routes/app_pages.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -54,7 +53,8 @@ class HomeView extends GetView<HomeController> {
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       TextButton(
-                          onPressed: () {}, child: const Text("Show all")),
+                          onPressed: () => Get.toNamed(Routes.ALL_PRESENCES),
+                          child: const Text("Show all")),
                     ],
                   ),
                   ListView.builder(
@@ -119,38 +119,70 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget _latestPresence() {
-    return Container(
-      height: 90,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: Colors.grey[300],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text("In"),
-              Text("-"),
-            ],
-          ),
-          VerticalDivider(
-            indent: 10,
-            endIndent: 10,
-            color: Colors.green,
-            thickness: 5,
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text("Out"),
-              Text("-"),
-            ],
-          ),
-        ],
-      ),
-    );
+    final employeeController = Get.put(EmployeeController());
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream: employeeController.fetchStreamPresence(),
+        builder: (context, snapshot) {
+          String? signInHour;
+          String? signOutHour;
+          if (snapshot.hasData) {
+            final result = snapshot.data!.data();
+            if (result != null) {
+              signInHour =
+                  DateFormat.Hms().format(DateTime.parse(result["in"]["date"]));
+              if (result["out"] != null) {
+                signOutHour = DateFormat.Hms()
+                    .format(DateTime.parse(result["out"]["date"]));
+              }
+            }
+          }
+          return Container(
+            height: 90,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.grey[300],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.login),
+                    const SizedBox(height: 8),
+                    snapshot.connectionState == ConnectionState.waiting
+                        ? const SizedBox(
+                            height: 15,
+                            width: 15,
+                            child: CircularProgressIndicator(),
+                          )
+                        : Text(signInHour ?? "-")
+                  ],
+                ),
+                const VerticalDivider(
+                  indent: 10,
+                  endIndent: 10,
+                  color: Colors.green,
+                  thickness: 5,
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.logout),
+                    const SizedBox(height: 8),
+                    snapshot.connectionState == ConnectionState.waiting
+                        ? const SizedBox(
+                            height: 15,
+                            width: 15,
+                            child: CircularProgressIndicator(),
+                          )
+                        : Text(signOutHour ?? "-")
+                  ],
+                ),
+              ],
+            ),
+          );
+        });
   }
 
   Widget _banner(
@@ -188,10 +220,9 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget _profile(BuildContext context, dynamic user) {
-    final presenceController = Get.find<PresenceController>();
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         SizedBox(
             width: MediaQuery.of(context).size.width / 2,
@@ -212,27 +243,9 @@ class HomeView extends GetView<HomeController> {
                       color: Colors.red,
                     ),
                     const SizedBox(width: 8),
-                    presenceController.currPosition == null
-                        ? const Text("...")
-                        : FutureBuilder(
-                            future: presenceController.getAdress(),
-                            builder:
-                                (context, AsyncSnapshot<Placemark?> snapshot) {
-                              if (snapshot.hasData) {
-                                final data = snapshot.data!;
-                                print("data : $data");
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text("${data.street},"),
-                                    Text("${data.subLocality},"),
-                                    Text("${data.subAdministrativeArea},"),
-                                    Text("${data.country}."),
-                                  ],
-                                );
-                              }
-                              return Text("...");
-                            }),
+                    SizedBox(
+                        width: MediaQuery.of(context).size.width / 2 - 35,
+                        child: Text(user["address"]))
                   ],
                 ),
               ],

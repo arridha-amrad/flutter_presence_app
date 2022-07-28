@@ -1,8 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:presence_app/app/helpers/helpers.dart';
 
 class EmployeeController extends GetxController {
   final _employee = FirebaseFirestore.instance.collection("employees");
+
+  final _authController = Get.put(AuthenticationController());
 
   Stream<DocumentSnapshot<Map<String, dynamic>>> getEmployee(
       String userId) async* {
@@ -19,6 +23,40 @@ class EmployeeController extends GetxController {
       message = "Failed to update profile";
     }
     return message;
+  }
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> findPresence(
+      String userId, String dateString) async {
+    return await _employee
+        .doc(userId)
+        .collection("presences")
+        .doc(dateString)
+        .get();
+  }
+
+  Stream<DocumentSnapshot<Map<String, dynamic>>> fetchStreamPresence() async* {
+    final auth = _authController.getAuthUser();
+    final dateString =
+        DateFormat.yMd().format(DateTime.now()).replaceAll("/", "-");
+    yield* _employee
+        .doc(auth!.uid)
+        .collection("presences")
+        .doc(dateString)
+        .snapshots();
+  }
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> createPresence(
+      String userId, Map<String, dynamic> data, String dateString) async {
+    final doc = _employee.doc(userId).collection("presences").doc(dateString);
+    await doc.set(data);
+    return doc.get();
+  }
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> updatePresence(
+      String userId, Map<String, dynamic> data, String dateString) async {
+    final doc = _employee.doc(userId).collection("presences").doc(dateString);
+    await doc.update(data);
+    return doc.get();
   }
 
   Future<void> saveEmployee({

@@ -26,6 +26,7 @@ Future<void> main() async {
             );
           }
           final user = snapshot.data;
+
           return GetMaterialApp(
             debugShowCheckedModeBanner: false,
             theme: ThemeData(

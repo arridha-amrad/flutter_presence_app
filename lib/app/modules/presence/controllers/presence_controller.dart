@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart';
 import 'package:presence_app/app/helpers/helpers.dart';
 import 'package:geocoding/geocoding.dart';
 
@@ -7,65 +9,155 @@ class PresenceController extends GetxController {
   final _employeeController = Get.put(EmployeeController());
   final _authController = Get.put(AuthenticationController());
 
-  Position? currPosition;
+  final officeLocation = {
+    "latitude": 0.5101267,
+    "longitude": 101.4499433,
+  };
 
-  Future<Placemark?> getAdress() async {
-    Placemark? place;
-    if (currPosition == null) return place;
-    List<Placemark> placemarks = await placemarkFromCoordinates(
-        currPosition!.latitude, currPosition!.longitude);
-    place = placemarks[0];
-    return place;
+  Map<String, dynamic>? presenceResult;
+  RxBool isLoading = false.obs;
+
+  double _calculateDistance(Position currentPosition) {
+    return Geolocator.distanceBetween(
+      officeLocation["latitude"]!,
+      officeLocation["longitude"]!,
+      currentPosition.latitude,
+      currentPosition.longitude,
+    );
   }
 
-  Future<Map<String, dynamic>> determinePosition() async {
+  Future<Placemark> _getAddress(Position position) async {
+    List<Placemark> placemarks =
+        await placemarkFromCoordinates(position.latitude, position.longitude);
+    return placemarks[0];
+  }
+
+  Future<Map<String, dynamic>> _determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
-
-    // Test if location services are enabled.
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the
-      // App to enable the location services.
       return {"error": "Location services are disabled"};
     }
-
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        // Permissions are denied, next time you could try
-        // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale
-        // returned true. According to Android guidelines
-        // your App should show an explanatory UI now.
         return {"error": "Location permissions are denied"};
       }
     }
-
     if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately.
       return {
         "error":
             "Location permissions are permanently denied, we cannot request permissions."
       };
     }
-
-    // When we reach here, permissions are granted and we can
-    // continue accessing the position of the device.
     Position position = await Geolocator.getCurrentPosition();
-    currPosition = position;
-    await _employeeController
-        .updateEmployee(userId: _authController.getAuthUser()!.uid, data: {
-      "position": {
-        "latitude": position.latitude,
-        "longitude": position.longitude,
-      }
-    });
     return {
       "position": position,
       "error": null,
     };
+  }
+
+  Future<void> signPresence() async {
+    showDialog(
+      barrierDismissible: false,
+      context: Get.context!,
+      builder: (context) => Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Center(
+          child: Container(
+            padding: const EdgeInsets.all(15.0),
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(15)),
+            child: Row(
+              children: const [
+                SizedBox(
+                  height: 17,
+                  width: 17,
+                  child: CircularProgressIndicator(),
+                ),
+                SizedBox(
+                  width: 12.0,
+                ),
+                Text("Finding your location...")
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    final resultPosition = await _determinePosition();
+    if (resultPosition["error"] != null) {
+      Helpers.setToast(message: "failed signing the presence");
+      return;
+    }
+    final Position position = resultPosition["position"];
+
+    String status = "inside area";
+    // if user position more than  200m from office, set status 'outside area'
+    final double distance = _calculateDistance(position);
+    if (distance > 200) {
+      status = "outside area";
+    }
+    final placemark = await _getAddress(position);
+    final address =
+        "${placemark.street}, ${placemark.subLocality}, ${placemark.subAdministrativeArea}";
+    print("============== placemark : $address");
+    final uid = _authController.getAuthUser()!.uid;
+    await _employeeController.updateEmployee(userId: uid, data: {
+      "address": address,
+      "position": {
+        "longitude": position.longitude,
+        "latitude": position.latitude,
+      }
+    });
+    final dateNow = DateTime.now();
+    final dateString = DateFormat.yMd().format(dateNow).replaceAll("/", "-");
+    final fetchedPresence =
+        await _employeeController.findPresence(uid, dateString);
+    final presence = fetchedPresence.data();
+    final presenceData = {
+      "address": address,
+      "date": dateNow.toIso8601String(),
+      "latitude": position.latitude,
+      "longitude": position.longitude,
+      "status": status,
+    };
+    if (presence == null) {
+      final data = await _employeeController.createPresence(
+        uid,
+        {
+          "date": DateTime.now().toIso8601String(),
+          "in": presenceData,
+        },
+        dateString,
+      );
+      presenceResult = data.data()!;
+      Get.back();
+    } else if (presence["in"] != null && presence["out"] == null) {
+      final data = await _employeeController.updatePresence(
+        uid,
+        {"date": dateNow.toIso8601String(), "out": presenceData},
+        dateString,
+      );
+      Helpers.setToast(message: "sign out presence accepted");
+      presenceResult = data.data()!;
+      Get.back();
+    } else if (presence["in"] != null && presence["out"] != null) {
+      Get.back();
+      presenceResult = presence;
+      showDialog(
+          context: Get.context!,
+          builder: (context) => Helpers.showDialog(
+                context: Get.context!,
+                title: "Forbidden",
+                message: "You have sign your presence twice",
+              ));
+      print("executed");
+    }
+    update();
   }
 }
