@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:presence_app/app/widgets/presence_card.dart';
 
 import '../controllers/presence_controller.dart';
 
@@ -14,10 +15,10 @@ class PresenceView extends GetView<PresenceController> {
       child: Scaffold(
         body: AnnotatedRegion<SystemUiOverlayStyle>(
           value: SystemUiOverlayStyle.dark,
-          child: SizedBox(
+          child: Container(
+            margin: const EdgeInsets.only(top: 20.0),
             width: double.infinity,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
@@ -46,10 +47,11 @@ class PresenceView extends GetView<PresenceController> {
                         controller.presenceResult!["out"];
                     return Column(
                       children: [
-                        _presenceCard(presenceIn, "Sign in"),
+                        PresenceCard(presence: presenceIn, title: "Sign in"),
                         presenceOut == null
                             ? const SizedBox()
-                            : _presenceCard(presenceOut, "Sign out")
+                            : PresenceCard(
+                                presence: presenceOut, title: "Sign out")
                       ],
                     );
                   }),
@@ -58,50 +60,6 @@ class PresenceView extends GetView<PresenceController> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  _presenceCard(
-    Map<String, dynamic> presence,
-    String title,
-  ) {
-    return ListTile(
-      contentPadding: const EdgeInsets.all(12),
-      title: Text(
-        title,
-        style: const TextStyle(fontWeight: FontWeight.bold),
-      ),
-      subtitle: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.location_pin,
-                color: Colors.red,
-              ),
-              const SizedBox(width: 12),
-              Expanded(child: Text(presence["address"]))
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.access_time,
-                color: Colors.red,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                  child: Text(DateFormat.Hms()
-                      .format(DateTime.parse(presence["date"]))))
-            ],
-          )
-        ],
       ),
     );
   }

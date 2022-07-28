@@ -6,6 +6,9 @@ import 'package:get/get.dart';
 class Helpers {
   static void setToast({required String message, int duration = 5}) {
     ScaffoldMessenger.of(Get.context!).showSnackBar(SnackBar(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 40),
       duration: Duration(seconds: duration),
       content: Text(message),
     ));
@@ -23,6 +26,7 @@ class Helpers {
     required BuildContext context,
     required String title,
     required String message,
+    VoidCallback? cancelFunction,
     VoidCallback? function,
   }) {
     return AlertDialog(
@@ -32,12 +36,20 @@ class Helpers {
       ),
       content: Text(message),
       actions: [
+        cancelFunction != null
+            ? TextButton(
+                onPressed: () {
+                  Get.back();
+                  cancelFunction();
+                },
+                child: const Text("Cancel"))
+            : const SizedBox(),
         TextButton(
             onPressed: () {
+              Get.back();
               if (function != null) {
                 function();
               }
-              Get.back();
             },
             child: const Text("Ok")),
       ],

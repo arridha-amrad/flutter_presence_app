@@ -45,6 +45,20 @@ class EmployeeController extends GetxController {
         .snapshots();
   }
 
+  Stream<QuerySnapshot<Map<String, dynamic>>>
+      fetcheStreamPresenceLastFive() async* {
+    final auth = _authController.getAuthUser();
+    final dateString =
+        DateFormat.yMd().format(DateTime.now()).replaceAll("/", "-");
+
+    yield* _employee
+        .doc(auth!.uid)
+        .collection("presences")
+        .orderBy("date", descending: true)
+        .limit(5)
+        .snapshots();
+  }
+
   Future<DocumentSnapshot<Map<String, dynamic>>> createPresence(
       String userId, Map<String, dynamic> data, String dateString) async {
     final doc = _employee.doc(userId).collection("presences").doc(dateString);

@@ -105,15 +105,7 @@ class PresenceController extends GetxController {
     final placemark = await _getAddress(position);
     final address =
         "${placemark.street}, ${placemark.subLocality}, ${placemark.subAdministrativeArea}";
-    print("============== placemark : $address");
     final uid = _authController.getAuthUser()!.uid;
-    await _employeeController.updateEmployee(userId: uid, data: {
-      "address": address,
-      "position": {
-        "longitude": position.longitude,
-        "latitude": position.latitude,
-      }
-    });
     final dateNow = DateTime.now();
     final dateString = DateFormat.yMd().format(dateNow).replaceAll("/", "-");
     final fetchedPresence =
@@ -126,6 +118,7 @@ class PresenceController extends GetxController {
       "longitude": position.longitude,
       "status": status,
     };
+    bool isUpdate = false;
     if (presence == null) {
       final data = await _employeeController.createPresence(
         uid,
@@ -136,6 +129,7 @@ class PresenceController extends GetxController {
         dateString,
       );
       presenceResult = data.data()!;
+      isUpdate = true;
       Get.back();
     } else if (presence["in"] != null && presence["out"] == null) {
       final data = await _employeeController.updatePresence(
@@ -145,9 +139,11 @@ class PresenceController extends GetxController {
       );
       Helpers.setToast(message: "sign out presence accepted");
       presenceResult = data.data()!;
+      isUpdate = true;
       Get.back();
     } else if (presence["in"] != null && presence["out"] != null) {
       Get.back();
+      isUpdate = false;
       presenceResult = presence;
       showDialog(
           context: Get.context!,
@@ -156,8 +152,17 @@ class PresenceController extends GetxController {
                 title: "Forbidden",
                 message: "You have sign your presence twice",
               ));
-      print("executed");
     }
+    if (isUpdate) {
+      await _employeeController.updateEmployee(userId: uid, data: {
+        "address": address,
+        "position": {
+          "longitude": position.longitude,
+          "latitude": position.latitude,
+        }
+      });
+    }
+    Helpers.setToast(message: "sign out presence accepted");
     update();
   }
 }

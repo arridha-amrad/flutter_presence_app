@@ -64,6 +64,8 @@ PODS:
     - FirebaseCore (~> 9.0)
     - GTMSessionFetcher/Core (< 3.0, >= 1.7)
   - Flutter (1.0.0)
+  - geocoding (1.0.5):
+    - Flutter
   - geolocator_apple (1.2.0):
     - Flutter
   - GoogleDataTransport (9.2.0):
@@ -102,6 +104,7 @@ DEPENDENCIES:
   - firebase_storage (from `.symlinks/plugins/firebase_storage/ios`)
   - FirebaseFirestore (from `https://github.com/invertase/firestore-ios-sdk-frameworks.git`, tag `9.3.0`)
   - Flutter (from `Flutter`)
+  - geocoding (from `.symlinks/plugins/geocoding/ios`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
 
@@ -137,6 +140,8 @@ EXTERNAL SOURCES:
     :tag: 9.3.0
   Flutter:
     :path: Flutter
+  geocoding:
+    :path: ".symlinks/plugins/geocoding/ios"
   geolocator_apple:
     :path: ".symlinks/plugins/geolocator_apple/ios"
   image_picker_ios:
@@ -164,6 +169,7 @@ SPEC CHECKSUMS:
   FirebaseStorage: 1414d27e15fa04f6350ef6602accef0e951c8bca
   FirebaseStorageInternal: f1a6d64cace780580d2b8ffa0a0c8cf3c376f3f8
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  geocoding: 32cfcdb16d38d907caaba65e2e42ad10d38bee58
   geolocator_apple: cc556e6844d508c95df1e87e3ea6fa4e58c50401
   GoogleDataTransport: 1c8145da7117bd68bbbed00cf304edb6a24de00f
   GoogleUtilities: e0913149f6b0625b553d70dae12b49fc62914fd1

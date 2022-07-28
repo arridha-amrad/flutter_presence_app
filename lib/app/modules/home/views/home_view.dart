@@ -49,7 +49,7 @@ class HomeView extends GetView<HomeController> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        "Last 5 days",
+                        "Latest presences",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       TextButton(
@@ -57,12 +57,7 @@ class HomeView extends GetView<HomeController> {
                           child: const Text("Show all")),
                     ],
                   ),
-                  ListView.builder(
-                    physics: const ScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: 5,
-                    itemBuilder: (context, index) => _briefPresenceCard(),
-                  )
+                  _latestPresences(),
                 ],
               ),
             );
@@ -70,52 +65,80 @@ class HomeView extends GetView<HomeController> {
     ));
   }
 
-  Widget _briefPresenceCard() {
-    return GestureDetector(
-      onTap: () => Get.toNamed(Routes.DETAIL_PRESENCE),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: Colors.grey[200],
-        ),
-        child: ListTile(
-          trailing: Text(
-            DateFormat.yMMMEd().format(DateTime.now()),
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          title: RichText(
-            text: TextSpan(
-                text: "In : ",
-                children: [
-                  TextSpan(
-                      text: DateFormat.jm().format(DateTime.now()),
-                      style: const TextStyle(fontWeight: FontWeight.normal)),
-                ],
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                )),
-          ),
-          subtitle: Container(
-            margin: const EdgeInsets.only(top: 12.0),
-            child: RichText(
-              text: TextSpan(
-                  text: "Out : ",
-                  children: [
-                    TextSpan(
-                        text: DateFormat.jm().format(DateTime.now()),
-                        style: const TextStyle(fontWeight: FontWeight.normal)),
-                  ],
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  )),
-            ),
-          ),
-        ),
-      ),
-    );
+  Widget _latestPresences() {
+    final employeeController = Get.find<EmployeeController>();
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: employeeController.fetcheStreamPresenceLastFive(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final docs = snapshot.data!.docs;
+          if (docs.isEmpty) {
+            return const Center(
+              child: Text("You have no presence history"),
+            );
+          }
+          return ListView.builder(
+              itemCount: docs.length,
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                final result = docs[index].data();
+                return GestureDetector(
+                  onTap: () =>
+                      Get.toNamed(Routes.DETAIL_PRESENCE, arguments: result),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.grey[200],
+                    ),
+                    child: ListTile(
+                      trailing: Text(
+                        DateFormat.yMMMEd()
+                            .format(DateTime.parse(result["date"])),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      title: RichText(
+                        text: TextSpan(
+                            text: "In : ",
+                            children: [
+                              TextSpan(
+                                  text: DateFormat.jm().format(
+                                      DateTime.parse(result["in"]["date"])),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.normal)),
+                            ],
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            )),
+                      ),
+                      subtitle: Container(
+                        margin: const EdgeInsets.only(top: 12.0),
+                        child: RichText(
+                          text: TextSpan(
+                              text: "Out : ",
+                              children: [
+                                TextSpan(
+                                    text: result["out"] != null
+                                        ? DateFormat.jm().format(DateTime.parse(
+                                            result["out"]["date"]))
+                                        : "-",
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.normal)),
+                              ],
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              )),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              });
+        });
   }
 
   Widget _latestPresence() {

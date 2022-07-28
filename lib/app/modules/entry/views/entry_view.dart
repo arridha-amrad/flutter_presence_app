@@ -2,6 +2,7 @@ import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:presence_app/app/helpers/util.dart';
 import 'package:presence_app/app/modules/presence/controllers/presence_controller.dart';
 
 import '../controllers/entry_controller.dart';
@@ -26,10 +27,23 @@ class EntryView extends GetView<EntryController> {
         ],
         initialActiveIndex: 0, //optional, default as 0
         onTap: (int i) async {
-          controller.indexPage.value = i;
           if (i == 1) {
-            final presenceCon = Get.find<PresenceController>();
-            await presenceCon.signPresence();
+            showDialog(
+              barrierDismissible: false,
+              context: context,
+              builder: (context) => Helpers.showDialog(
+                  function: () {
+                    controller.indexPage.value = i;
+                    final presenceCon = Get.find<PresenceController>();
+                    presenceCon.signPresence();
+                  },
+                  cancelFunction: () {},
+                  context: context,
+                  title: "Signing confirmation",
+                  message: "Are you sure to continue signing your presence ?"),
+            );
+          } else {
+            controller.indexPage.value = i;
           }
         },
       ),
