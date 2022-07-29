@@ -32,10 +32,12 @@ class EntryView extends GetView<EntryController> {
               barrierDismissible: false,
               context: context,
               builder: (context) => Helpers.showDialog(
-                  function: () {
-                    controller.indexPage.value = i;
+                  function: () async {
                     final presenceCon = Get.find<PresenceController>();
-                    presenceCon.signPresence();
+                    final isSuccess = await presenceCon.signPresence();
+                    if (isSuccess) {
+                      controller.indexPage.value = i;
+                    }
                   },
                   cancelFunction: () {},
                   context: context,

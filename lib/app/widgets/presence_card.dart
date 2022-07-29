@@ -43,9 +43,7 @@ class PresenceCard extends StatelessWidget {
                 color: Colors.red,
               ),
               const SizedBox(width: 12),
-              Expanded(
-                  child: Text(DateFormat.Hms()
-                      .format(DateTime.parse(presence["date"]))))
+              Expanded(child: Text(presence["date"]))
             ],
           )
         ],

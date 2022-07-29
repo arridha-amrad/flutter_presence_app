@@ -25,11 +25,7 @@ class DetailPresenceView extends GetView<DetailPresenceController> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              "${DateFormat.EEEE().format(DateTime.parse(arguments["date"]))},",
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
-            ),
-            Text(
-              "${DateFormat.yMMMMd().format(DateTime.parse(arguments["date"])).replaceAll(",", "")}.",
+              arguments["date"],
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
             ),
             const SizedBox(height: 12.0),

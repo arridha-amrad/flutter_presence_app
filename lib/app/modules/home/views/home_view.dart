@@ -44,7 +44,7 @@ class HomeView extends GetView<HomeController> {
                   const SizedBox(height: 20.0),
                   _banner(user),
                   const SizedBox(height: 12.0),
-                  _latestPresence(),
+                  _todayPresence(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -68,7 +68,7 @@ class HomeView extends GetView<HomeController> {
   Widget _latestPresences() {
     final employeeController = Get.find<EmployeeController>();
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: employeeController.fetcheStreamPresenceLastFive(),
+        stream: employeeController.fetchStreamPresenceLastFive(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -95,8 +95,7 @@ class HomeView extends GetView<HomeController> {
                     ),
                     child: ListTile(
                       trailing: Text(
-                        DateFormat.yMMMEd()
-                            .format(DateTime.parse(result["date"])),
+                        result["date"],
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       title: RichText(
@@ -141,7 +140,7 @@ class HomeView extends GetView<HomeController> {
         });
   }
 
-  Widget _latestPresence() {
+  Widget _todayPresence() {
     final employeeController = Get.put(EmployeeController());
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         stream: employeeController.fetchStreamPresence(),
@@ -166,41 +165,46 @@ class HomeView extends GetView<HomeController> {
               color: Colors.grey[300],
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.login),
-                    const SizedBox(height: 8),
-                    snapshot.connectionState == ConnectionState.waiting
-                        ? const SizedBox(
-                            height: 15,
-                            width: 15,
-                            child: CircularProgressIndicator(),
-                          )
-                        : Text(signInHour ?? "-")
-                  ],
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("Sign in"),
+                      const SizedBox(height: 8),
+                      const Icon(Icons.login),
+                      const SizedBox(height: 8),
+                      snapshot.connectionState == ConnectionState.waiting
+                          ? const SizedBox(
+                              height: 15,
+                              width: 15,
+                              child: CircularProgressIndicator(),
+                            )
+                          : Text(signInHour ?? "-")
+                    ],
+                  ),
                 ),
-                const VerticalDivider(
-                  indent: 10,
-                  endIndent: 10,
-                  color: Colors.green,
-                  thickness: 5,
+                const Text(
+                  "Today",
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.logout),
-                    const SizedBox(height: 8),
-                    snapshot.connectionState == ConnectionState.waiting
-                        ? const SizedBox(
-                            height: 15,
-                            width: 15,
-                            child: CircularProgressIndicator(),
-                          )
-                        : Text(signOutHour ?? "-")
-                  ],
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("Sign out"),
+                      const SizedBox(height: 8),
+                      const Icon(Icons.logout),
+                      const SizedBox(height: 8),
+                      snapshot.connectionState == ConnectionState.waiting
+                          ? const SizedBox(
+                              height: 15,
+                              width: 15,
+                              child: CircularProgressIndicator(),
+                            )
+                          : Text(signOutHour ?? "-")
+                    ],
+                  ),
                 ),
               ],
             ),
